@@ -1,5 +1,5 @@
 import {Firestore} from './firestore';
-import {CollectionReference, DocumentReference, FirestoreDocumentType} from './utils/firestore-types';
+import {CollectionReference, DocumentReference, FirestoreDocumentType} from '../utils/firestore-types';
 
 export class FirestoreRefenrece<T extends FirestoreDocumentType> {
   constructor(protected path: string = path) {}
