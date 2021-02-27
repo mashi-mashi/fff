@@ -6,3 +6,4 @@ lib/
 coverage
 firebase-debug.log
 .firebaserc
+src/playground.*
