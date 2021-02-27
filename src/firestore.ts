@@ -11,7 +11,7 @@ export class Firestore {
   /**
    * @param data
    */
-  public static beforeAdd = <T extends FirestoreDocumentType>(data: T): WithMetadata<T> => {
+  public static beforeAdd = <T extends Omit<FirestoreDocumentType, 'id'>>(data: T): WithMetadata<T> => {
     const addData = {...data} as WithMetadata<T>;
 
     deleteUndefinedRecursively(addData);
@@ -39,7 +39,7 @@ export class Firestore {
     return merge ?? false;
   };
 
-  public static add = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: T) => {
+  public static add = async <T extends Omit<FirestoreDocumentType, 'id'>>(ref: DocumentReference<T>, data: T) => {
     const addData = Firestore.beforeAdd(data);
     await ref.set(addData);
     return addData;

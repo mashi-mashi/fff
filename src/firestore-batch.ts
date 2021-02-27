@@ -10,9 +10,11 @@ export class FirestoreBatch {
   private batchArray: WriteBatch[];
   private batchIndex: number = 0;
   private count: number = 0;
+  private _limit: number;
 
-  constructor() {
+  constructor({limit}: {limit: number} = {limit: FIRESTORE_BATCH_LIMIT}) {
     this.batchArray = [];
+    this._limit = limit;
   }
 
   private incrementCount = () => this.count++;
@@ -22,7 +24,7 @@ export class FirestoreBatch {
   };
 
   private getBatch = (): WriteBatch => {
-    if (this.count > FIRESTORE_BATCH_LIMIT) {
+    if (this.count >= this._limit) {
       this.batchIndex++;
       this.count = 0;
     }
@@ -35,9 +37,9 @@ export class FirestoreBatch {
     return this.batchArray[this.batchIndex];
   };
 
-  public add = <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: T) => {
+  public add = <T extends Omit<FirestoreDocumentType, 'id'>>(ref: DocumentReference<T>, data: T) => {
     const addData = Firestore.beforeAdd(data);
-    this.batchArray[this.batchIndex].set(ref, addData);
+    this.getBatch().set(ref, addData);
     this.incrementCount();
     return this;
   };
