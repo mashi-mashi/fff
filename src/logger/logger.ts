@@ -1,9 +1,9 @@
 import {logger} from 'firebase-functions';
-import {safeStringify} from './utils/utils';
+import {safeStringify} from '../utils/utils';
 
 export class Logger {
   public static create = (name: string) => new Logger(name);
-  constructor(protected name: string, protected prefix?: string) {}
+  private constructor(protected name: string, protected prefix?: string) {}
 
   public setPrefix = (prefix: string) => (this.prefix = prefix);
 

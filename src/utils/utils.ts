@@ -1,5 +1,5 @@
 import {firestore} from 'firebase-admin';
-import {TimestampToEpochMillis} from './firestore-types';
+import {TimestampToEpochMillis} from '../types/firestore-types';
 import Timestamp = firestore.Timestamp;
 
 const safeStringify = (obj: any, indent = 0) => {

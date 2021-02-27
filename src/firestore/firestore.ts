@@ -1,6 +1,6 @@
 import {CollectionReference, DocumentReference, Query} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
-import {EpochMillis, FirestoreDocumentType, NestedPartial, WithMetadata} from '../utils/firestore-types';
+import {EpochMillis, FirestoreDocumentType, NestedPartial, WithMetadata} from '../types/firestore-types';
 import {deleteUndefinedRecursively} from '../utils/utils';
 
 export class Firestore {
