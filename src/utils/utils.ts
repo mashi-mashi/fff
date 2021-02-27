@@ -2,6 +2,22 @@ import {firestore} from 'firebase-admin';
 import {TimestampToEpochMillis} from './firestore-types';
 import Timestamp = firestore.Timestamp;
 
+const safeStringify = (obj: any, indent = 0) => {
+  let cache: any = [];
+  const retVal = JSON.stringify(
+    obj,
+    (key, value) =>
+      typeof value === 'object' && value !== null
+        ? cache.includes(value)
+          ? undefined
+          : cache.push(value) && value
+        : value,
+    indent
+  );
+  cache = null;
+  return retVal;
+};
+
 const chunk = <T extends any[]>(array: T, size: number): T[] =>
   array.reduce((newarr, _, i) => (i % size ? newarr : [...newarr, array.slice(i, i + size)]), []);
 
@@ -39,4 +55,4 @@ const timestampToMillis = <T>(data: T): TimestampToEpochMillis<T> => {
   }
 };
 
-export {deleteUndefinedRecursively, timestampToMillis, chunk};
+export {deleteUndefinedRecursively, timestampToMillis, chunk, safeStringify};
