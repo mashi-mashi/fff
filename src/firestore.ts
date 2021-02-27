@@ -1,5 +1,5 @@
+import {CollectionReference, DocumentReference, Query} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
-import {DocumentReference, CollectionReference, Query} from '@google-cloud/firestore';
 import {EpochMillis, FirestoreDocumentType, NestedPartial, WithMetadata} from './utils/firestore-types';
 import {deleteUndefinedRecursively} from './utils/utils';
 
@@ -26,11 +26,11 @@ export class Firestore {
     data: NestedPartial<T>
   ): WithMetadata<NestedPartial<T>> => {
     const setData = {...data} as NestedPartial<WithMetadata<T>>;
-    delete setData.id;
+    if ('id' in setData) delete setData.id;
+    if ('createdAt' in setData) delete setData.createdAt;
+    if ('deletedAt' in setData) delete setData.deletedAt;
     deleteUndefinedRecursively(setData);
     setData.updatedAt = Firestore.now();
-    delete setData.createdAt;
-    delete setData.deletedAt;
     return setData;
   };
 
@@ -39,28 +39,30 @@ export class Firestore {
     return merge ?? false;
   };
 
-  public static add = async <T extends Omit<FirestoreDocumentType, 'id'>>(ref: DocumentReference<T>, data: T) => {
+  public static add = async <T extends Omit<FirestoreDocumentType, 'id'>>(
+    ref: DocumentReference<T>,
+    data: T
+  ): Promise<WithMetadata<T>> => {
     const addData = Firestore.beforeAdd(data);
     await ref.set(addData);
     return addData;
   };
 
-  public static set = <T extends FirestoreDocumentType>(
+  public static set = async <T extends FirestoreDocumentType>(
     ref: DocumentReference<T>,
     data: NestedPartial<T>,
     option?: {merge: boolean}
-  ) => {
+  ): Promise<WithMetadata<NestedPartial<T>>> => {
     const setData = Firestore.beforeSet(data);
-    return ref.set(setData as T, {merge: option?.merge});
+    await ref.set(setData as T, {merge: option?.merge});
+    return setData;
   };
 
   public static get = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>): Promise<T | undefined> => {
     const doc = await ref.get();
     const data = doc.data();
-    if (!data) {
-      return undefined;
-    }
-    return {...data, id: doc.id} as T;
+
+    return data ? ({...data, id: doc.id} as T) : undefined;
   };
 
   /**
@@ -74,7 +76,10 @@ export class Firestore {
     if (!ids || !ids.length) {
       return [];
     }
-    const refs = ids.map(id => firestore().doc(`${collectionRef.path}/${id}`));
+
+    const uniqIds = Array.from(new Set(ids));
+
+    const refs = uniqIds.map(id => firestore().doc(`${collectionRef.path}/${id}`));
     const docs = await firestore().getAll(...refs);
 
     return docs.map(doc => ({
@@ -83,12 +88,24 @@ export class Firestore {
     }));
   };
 
-  public static delete = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>) => {
+  public static delete = async <T extends FirestoreDocumentType>(
+    ref: DocumentReference<T>
+  ): Promise<FirestoreDocumentType> => {
     const current = await Firestore.get(ref);
+    if (!current) throw new Error('data-not-found');
+
     const deleteData = {...current, deleted: true, deletedAt: Firestore.now} as any;
-    return await Firestore.set(ref, deleteData);
+    await Firestore.set(ref, deleteData);
+    return {id: ref.id};
   };
-  public static forceDelete = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>) => ref.delete();
+  public static forceDelete = async <T extends FirestoreDocumentType>(
+    ref: DocumentReference<T>
+  ): Promise<FirestoreDocumentType> => {
+    await ref.delete();
+    return {
+      id: ref.id,
+    };
+  };
 
   public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<T[]> =>
     (await ref.get()).docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id}));
@@ -116,11 +133,6 @@ export class Firestore {
   };
 
   public static timestampFromMillis = (millis: EpochMillis) => firestore.Timestamp.fromMillis(millis);
-  public static timestampFromMillisIfNull = (millis?: EpochMillis) => {
-    if (millis) {
-      return Firestore.timestampFromMillis(millis);
-    } else {
-      return undefined;
-    }
-  };
+  public static timestampFromMillisIfNull = (millis?: EpochMillis) =>
+    millis ? Firestore.timestampFromMillis(millis) : undefined;
 }
