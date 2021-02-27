@@ -45,9 +45,13 @@ export class Firestore {
     return addData;
   };
 
-  public static set = <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: NestedPartial<T>) => {
+  public static set = <T extends FirestoreDocumentType>(
+    ref: DocumentReference<T>,
+    data: NestedPartial<T>,
+    option?: {merge: boolean}
+  ) => {
     const setData = Firestore.beforeSet(data);
-    return ref.set(setData as T, {merge: true});
+    return ref.set(setData as T, {merge: option?.merge});
   };
 
   public static get = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>): Promise<T | undefined> => {
