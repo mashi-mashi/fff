@@ -1,6 +1,6 @@
 import {firestore} from 'firebase-admin';
 import {DocumentReference, CollectionReference, Query} from '@google-cloud/firestore';
-import {EpochMillis, FirestoreTypes, NestedPartial, WithMetadata} from './utils/type-utils';
+import {EpochMillis, FirestoreDocumentType, NestedPartial, WithMetadata} from './utils/firestore-types';
 import {deleteUndefinedRecursively} from './utils/utils';
 
 export class Firestore {
@@ -10,9 +10,8 @@ export class Firestore {
 
   /**
    * @param data
-   * @param operator
    */
-  public static beforeAdd = <T extends FirestoreTypes>(data: T): WithMetadata<T> => {
+  public static beforeAdd = <T extends FirestoreDocumentType>(data: T): WithMetadata<T> => {
     const addData = {...data} as WithMetadata<T>;
 
     deleteUndefinedRecursively(addData);
@@ -22,9 +21,10 @@ export class Firestore {
 
   /**
    * @param data
-   * @param operator
    */
-  public static beforeSet = <T extends FirestoreTypes>(data: NestedPartial<T>): WithMetadata<NestedPartial<T>> => {
+  public static beforeSet = <T extends FirestoreDocumentType>(
+    data: NestedPartial<T>
+  ): WithMetadata<NestedPartial<T>> => {
     const setData = {...data} as NestedPartial<WithMetadata<T>>;
     delete setData.id;
     deleteUndefinedRecursively(setData);
@@ -34,73 +34,59 @@ export class Firestore {
     return setData;
   };
 
-  public static toDeletedData = <T extends FirestoreTypes>(data: T): WithMetadata<T> => {
-    const deletedData = {...data} as WithMetadata<T>;
-    deletedData.deleted = true;
-    const now = Firestore.now();
-    deleteUndefinedRecursively(deletedData);
-    return {...deletedData, deleted: true, deletedAt: now};
-  };
-
   public static optimizeMergeOption = (merge?: boolean) => {
     // undefinedはtrueにする
-    // noinspection RedundantConditionalExpressionJS
-    return merge === false ? false : true;
+    return merge ?? false;
   };
 
-  public static add = async <T extends FirestoreTypes>(ref: DocumentReference<T>, data: T) => {
+  public static add = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: T) => {
     const addData = Firestore.beforeAdd(data);
     await ref.set(addData);
     return addData;
   };
 
-  public static set = <T extends FirestoreTypes>(ref: DocumentReference<T>, data: NestedPartial<T>) => {
+  public static set = <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: NestedPartial<T>) => {
     const setData = Firestore.beforeSet(data);
     return ref.set(setData as T, {merge: true});
   };
 
-  public static get = async <T extends FirestoreTypes>(ref: DocumentReference<T>): Promise<T | undefined> => {
+  public static get = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>): Promise<T | undefined> => {
     const doc = await ref.get();
     const data = doc.data();
     if (!data) {
       return undefined;
     }
-    data.id = doc.id;
-    return data as T;
+    return {...data, id: doc.id} as T;
   };
 
   /**
    * @param collectionRef
    * @param ids
    */
-  public static getDocs = async <T extends FirestoreTypes>(
+  public static getDocs = async <T extends FirestoreDocumentType>(
     collectionRef: CollectionReference<T>,
     ids: string[]
   ): Promise<T[]> => {
-    if (!ids || !ids[0]) {
+    if (!ids || !ids.length) {
       return [];
     }
     const refs = ids.map(id => firestore().doc(`${collectionRef.path}/${id}`));
     const docs = await firestore().getAll(...refs);
-    const dataList: T[] = [];
-    for (const doc of docs) {
-      const data = doc.data();
-      if (data) {
-        data.id = doc.id;
-        dataList.push(data as T);
-      }
-    }
-    return dataList;
+
+    return docs.map(doc => ({
+      ...(doc.data() as T),
+      id: doc.id,
+    }));
   };
 
-  public static delete = async <T extends FirestoreTypes>(ref: DocumentReference<T>) => {
+  public static delete = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>) => {
     const current = await Firestore.get(ref);
     const deleteData = {...current, deleted: true, deletedAt: Firestore.now} as any;
     return await Firestore.set(ref, deleteData);
   };
-  public static forceDelete = async <T extends FirestoreTypes>(ref: DocumentReference<T>) => ref.delete();
+  public static forceDelete = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>) => ref.delete();
 
-  public static getByQuery = async <T extends FirestoreTypes>(ref: Query<T>): Promise<T[]> =>
+  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<T[]> =>
     (await ref.get()).docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id}));
 
   public static deleteFieldValue = (): any => firestore.FieldValue.delete();

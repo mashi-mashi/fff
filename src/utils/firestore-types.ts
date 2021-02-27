@@ -3,7 +3,7 @@ import FirebaseFirestore from '@google-cloud/firestore';
 export type Timestamp = FirebaseFirestore.Timestamp;
 export type EpochMillis = number;
 
-export type FirestoreTypes = {
+export type FirestoreDocumentType = {
   id: string;
 };
 
@@ -43,6 +43,6 @@ export type WithMetadata<T> = T & {
   deletedAt?: Timestamp;
 };
 
-export type CollectionReference<T extends FirestoreTypes> = FirebaseFirestore.CollectionReference<T>;
-export type DocumentReference<T extends FirestoreTypes> = FirebaseFirestore.DocumentReference<T>;
-export type Query<T extends FirestoreTypes> = FirebaseFirestore.Query<T>;
+export type CollectionReference<T extends FirestoreDocumentType> = FirebaseFirestore.CollectionReference<T>;
+export type DocumentReference<T extends FirestoreDocumentType> = FirebaseFirestore.DocumentReference<T>;
+export type Query<T extends FirestoreDocumentType> = FirebaseFirestore.Query<T>;

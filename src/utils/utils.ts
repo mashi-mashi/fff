@@ -1,6 +1,9 @@
 import {firestore} from 'firebase-admin';
-import {TimestampToEpochMillis} from './type-utils';
+import {TimestampToEpochMillis} from './firestore-types';
 import Timestamp = firestore.Timestamp;
+
+const chunk = <T extends any[]>(array: T, size: number): T[] =>
+  array.reduce((newarr, _, i) => (i % size ? newarr : [...newarr, array.slice(i, i + size)]), []);
 
 const deleteUndefinedRecursively = (data: Record<string, any>) => {
   for (const [k, v] of Object.entries(data)) {
@@ -36,4 +39,4 @@ const timestampToMillis = <T>(data: T): TimestampToEpochMillis<T> => {
   }
 };
 
-export {deleteUndefinedRecursively, timestampToMillis}
+export {deleteUndefinedRecursively, timestampToMillis, chunk};

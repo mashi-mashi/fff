@@ -1,40 +1,70 @@
 import {DocumentReference} from '@google-cloud/firestore';
 import admin from 'firebase-admin';
-import {FirestoreTypes, NestedPartial} from './utils/type-utils';
 import {Firestore} from './firestore';
+import {FirestoreDocumentType, NestedPartial} from './utils/firestore-types';
 import WriteBatch = FirebaseFirestore.WriteBatch;
 
+const FIRESTORE_BATCH_LIMIT = 500;
+
 export class FirestoreBatch {
-  private batch: WriteBatch;
+  private batchArray: WriteBatch[];
+  private batchIndex: number = 0;
+  private count: number = 0;
 
   constructor() {
-    this.batch = admin.firestore().batch();
+    this.batchArray = [];
   }
 
-  public add = <T extends FirestoreTypes>(ref: DocumentReference<T>, data: T) => {
+  private incrementCount = () => this.count++;
+  private reset = () => {
+    this.count = 0;
+    this.batchIndex = 0;
+  };
+
+  private getBatch = (): WriteBatch => {
+    if (this.count > FIRESTORE_BATCH_LIMIT) {
+      this.batchIndex++;
+      this.count = 0;
+    }
+
+    const current = this.batchArray[this.batchIndex];
+    if (!current) {
+      this.batchArray[this.batchIndex] = admin.firestore().batch();
+    }
+
+    return this.batchArray[this.batchIndex];
+  };
+
+  public add = <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: T) => {
     const addData = Firestore.beforeAdd(data);
-    this.batch.set(ref, addData);
+    this.batchArray[this.batchIndex].set(ref, addData);
+    this.incrementCount();
     return this;
   };
 
   public set = <T>(ref: DocumentReference<T>, data: NestedPartial<T>, merge?: boolean) => {
     const setData = Firestore.beforeSet(data);
-    this.batch.set(ref, setData as T, {merge: Firestore.optimizeMergeOption(merge)});
+    this.getBatch().set(ref, setData as T, {merge: Firestore.optimizeMergeOption(merge)});
+    this.incrementCount();
     return this;
   };
 
-  public delete = <T extends FirestoreTypes>(ref: DocumentReference<T>, data: T) => {
-    this.batch.set(ref, {...data, deleted: true, deletedAt: Firestore.now});
+  public delete = <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: T) => {
+    const now = Firestore.now();
+    this.getBatch().set(ref, {...data, updatedAt: now, deleted: true, deletedAt: now});
+    this.incrementCount();
     return this;
   };
 
-  public forceDelete = <T extends FirestoreTypes>(ref: DocumentReference<T>) => {
-    this.batch.delete(ref);
+  public forceDelete = <T extends FirestoreDocumentType>(ref: DocumentReference<T>) => {
+    this.getBatch().delete(ref);
+    this.incrementCount();
     return this;
   };
 
   public commit = async () => {
-    const [result] = await Promise.all([this.batch.commit()]);
-    return result;
+    const results = await Promise.all(this.batchArray.map(batch => batch.commit()));
+    this.reset();
+    return results.flat();
   };
 }
