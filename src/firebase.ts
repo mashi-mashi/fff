@@ -10,10 +10,12 @@ export class Firebase {
     databaseUrl?: string;
     storageBucketName?: string;
   }) => {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: databaseUrl,
-      storageBucket: storageBucketName,
-    });
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: databaseUrl,
+        storageBucket: storageBucketName,
+      });
+    }
   };
 }
