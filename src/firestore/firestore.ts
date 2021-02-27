@@ -16,7 +16,8 @@ export class Firestore {
 
     deleteUndefinedRecursively(addData);
     const now = Firestore.now();
-    return {...addData, createdAt: now, updateAt: now, deleted: false};
+    if ('id' in addData) delete (addData as T & {id?: string}).id;
+    return {...addData, createdAt: now, updatedAt: now, deleted: false};
   };
 
   /**
@@ -36,7 +37,7 @@ export class Firestore {
 
   public static optimizeMergeOption = (merge?: boolean) => {
     // undefinedはtrueにする
-    return merge ?? false;
+    return merge ?? true;
   };
 
   public static add = async <T extends Omit<FirestoreDocumentType, 'id'>>(

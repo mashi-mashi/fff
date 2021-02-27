@@ -3,7 +3,7 @@ import {CollectionReference, DocumentReference, FirestoreDocumentType} from '../
 
 export class FirestoreRefenrece<T extends FirestoreDocumentType> {
   constructor(protected path: string = path) {}
-  public getPath = this.path;
+  public getPath = () => this.path;
 
   public collection = () => Firestore.collection(this.path) as CollectionReference<T>;
   public doc = (id: string) => this.collection().doc(id) as DocumentReference<T>;
