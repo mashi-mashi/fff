@@ -11,7 +11,8 @@
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "forceConsistentCasingInFileNames": true,
     "lib": [
-      "esnext.bigint"
+      "esnext.bigint",
+      "ES2019"
     ]
   },
   "compileOnSave": true
