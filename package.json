@@ -1,12 +1,12 @@
 {
   "name": "@mashi-mashi/firebase-wapper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "author": "mashi-mashi <shima.trends@gmail.com>",
   "main": "lib/index.js",
   "types": "dist/index.d.ts",
   "publishConfig": {
-    "registry":"https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "build": "tsc",
