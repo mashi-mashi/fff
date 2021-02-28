@@ -1,0 +1,36 @@
+name: Publish Node.js Package
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-18.04]
+        node-version: [10.x]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://npm.pkg.github.com'
+      - name: Install dependencies without cache
+        run: |
+          npm ci
+      - name: Build
+        run: npm run build --if-present
+      - name: Increase the version of npm
+        run: bash .github/scripts/version.sh ${GITHUB_REF#refs/heads/}
+        env:
+          GITHUB_ACTOR: ${GITHUB_ACTOR}
+          GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish package to npm
+        run: bash .github/scripts/publish.sh ${GITHUB_REF#refs/heads/}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
