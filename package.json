@@ -5,6 +5,9 @@
   "author": "mashi-mashi <shima.trends@gmail.com>",
   "main": "lib/index.js",
   "types": "dist/index.d.ts",
+  "publishConfig": {
+    "registry":"https://npm.pkg.github.com"
+  },
   "scripts": {
     "build": "tsc",
     "buildWatch": "tsc --watch",
