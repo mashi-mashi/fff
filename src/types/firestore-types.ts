@@ -7,6 +7,8 @@ export type FirestoreDocumentType = {
   id: string;
 };
 
+export type OptionalId<T> = Omit<T, 'id'> & {id?: string};
+
 // https://stackoverflow.com/questions/47914536/use-partial-in-nested-property-with-typescript
 export type NestedPartial<T> = T extends Record<string, unknown>
   ? {

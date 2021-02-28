@@ -1,6 +1,6 @@
 import {CollectionReference, DocumentReference, Query} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
-import {EpochMillis, FirestoreDocumentType, NestedPartial, WithMetadata} from '../types/firestore-types';
+import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../types/firestore-types';
 import {deleteUndefinedRecursively} from '../utils/utils';
 
 export class Firestore {
@@ -11,7 +11,7 @@ export class Firestore {
   /**
    * @param data
    */
-  public static beforeAdd = <T extends Omit<FirestoreDocumentType, 'id'>>(data: T): WithMetadata<T> => {
+  public static beforeAdd = <T extends Omit<FirestoreDocumentType, 'id'>>(data: T): T => {
     const addData = {...data} as WithMetadata<T>;
 
     deleteUndefinedRecursively(addData);
@@ -42,9 +42,9 @@ export class Firestore {
 
   public static add = async <T extends Omit<FirestoreDocumentType, 'id'>>(
     ref: DocumentReference<T>,
-    data: T
+    data: OptionalId<T>
   ): Promise<WithMetadata<T>> => {
-    const addData = Firestore.beforeAdd(data);
+    const addData = Firestore.beforeAdd(data) as T;
     await ref.set(addData);
     return addData;
   };
@@ -99,6 +99,7 @@ export class Firestore {
     await Firestore.set(ref, deleteData);
     return {id: ref.id};
   };
+
   public static forceDelete = async <T extends FirestoreDocumentType>(
     ref: DocumentReference<T>
   ): Promise<FirestoreDocumentType> => {
@@ -111,7 +112,7 @@ export class Firestore {
   public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<T[]> =>
     (await ref.get()).docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id}));
 
-  public static deleteFieldValue = (): any => firestore.FieldValue.delete();
+  public static deleteFieldValue = () => firestore.FieldValue.delete();
 
   public static getByFieldValues = async <T extends {id: string}>(
     query: firestore.Query<T>,

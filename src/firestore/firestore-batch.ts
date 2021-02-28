@@ -1,7 +1,7 @@
 import {DocumentReference} from '@google-cloud/firestore';
 import admin from 'firebase-admin';
 import {Firestore} from './firestore';
-import {FirestoreDocumentType, NestedPartial} from '../types/firestore-types';
+import {FirestoreDocumentType, NestedPartial, OptionalId} from '../types/firestore-types';
 import WriteBatch = FirebaseFirestore.WriteBatch;
 
 const FIRESTORE_BATCH_LIMIT = 500;
@@ -37,9 +37,9 @@ export class FirestoreBatch {
     return this.batchArray[this.batchIndex];
   };
 
-  public add = <T extends Omit<FirestoreDocumentType, 'id'>>(ref: DocumentReference<T>, data: T) => {
+  public add = <T extends Omit<FirestoreDocumentType, 'id'>>(ref: DocumentReference<T>, data: OptionalId<T>) => {
     const addData = Firestore.beforeAdd(data);
-    this.getBatch().set(ref, addData);
+    this.getBatch().set(ref, addData as T);
     this.incrementCount();
     return this;
   };
