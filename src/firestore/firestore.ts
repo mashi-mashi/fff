@@ -11,7 +11,7 @@ export class Firestore {
   /**
    * @param data
    */
-  public static beforeAdd = <T extends Omit<FirestoreDocumentType, 'id'>>(data: T): T => {
+  public static beforeAdd = <T extends OptionalId<FirestoreDocumentType>>(data: T): T => {
     const addData = {...data} as WithMetadata<T>;
 
     deleteUndefinedRecursively(addData);
@@ -40,7 +40,7 @@ export class Firestore {
     return merge ?? true;
   };
 
-  public static add = async <T extends Omit<FirestoreDocumentType, 'id'>>(
+  public static add = async <T extends OptionalId<FirestoreDocumentType>>(
     ref: DocumentReference<T>,
     data: OptionalId<T>
   ): Promise<WithMetadata<T>> => {
@@ -89,6 +89,9 @@ export class Firestore {
     }));
   };
 
+  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<T[]> =>
+    (await ref.get()).docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id}));
+
   public static delete = async <T extends FirestoreDocumentType>(
     ref: DocumentReference<T>
   ): Promise<FirestoreDocumentType> => {
@@ -108,9 +111,6 @@ export class Firestore {
       id: ref.id,
     };
   };
-
-  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<T[]> =>
-    (await ref.get()).docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id}));
 
   public static deleteFieldValue = () => firestore.FieldValue.delete();
 

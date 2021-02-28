@@ -37,7 +37,7 @@ export class FirestoreBatch {
     return this.batchArray[this.batchIndex];
   };
 
-  public add = <T extends Omit<FirestoreDocumentType, 'id'>>(ref: DocumentReference<T>, data: OptionalId<T>) => {
+  public add = <T extends OptionalId<FirestoreDocumentType>>(ref: DocumentReference<T>, data: OptionalId<T>) => {
     const addData = Firestore.beforeAdd(data);
     this.getBatch().set(ref, addData as T);
     this.incrementCount();
