@@ -1,6 +1,6 @@
 {
-  "name": "firebase-wapper",
-  "version": "0.0.2",
+  "name": "@mashi-mashi/firebase-wapper",
+  "version": "0.0.0",
   "description": "",
   "author": "mashi-mashi <shima.trends@gmail.com>",
   "main": "lib/index.js",
