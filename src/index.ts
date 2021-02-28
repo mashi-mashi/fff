@@ -1,3 +1,4 @@
+export {Firebase} from './firebase';
 export {Firestore} from './firestore/firestore';
 export {FirestoreBatch} from './firestore/firestore-batch';
 export {FirestoreRefenrece} from './firestore/firestore-reference';
