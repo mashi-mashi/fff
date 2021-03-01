@@ -9,7 +9,7 @@ export class Firebase {
     serviceAccount: ServiceAccount;
     databaseUrl?: string;
     storageBucketName?: string;
-  }) => {
+  }): void => {
     if (!admin.apps.length) {
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),

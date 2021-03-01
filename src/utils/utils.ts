@@ -2,7 +2,7 @@ import {firestore} from 'firebase-admin';
 import {TimestampToEpochMillis} from '../types/firestore-types';
 import Timestamp = firestore.Timestamp;
 
-const safeStringify = (obj: any, indent = 0) => {
+const safeStringify = (obj: any, indent = 0): string => {
   let cache: any = [];
   const retVal = JSON.stringify(
     obj,

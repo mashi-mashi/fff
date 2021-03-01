@@ -37,34 +37,34 @@ export class FirestoreBatch {
     return this.batchArray[this.batchIndex];
   };
 
-  public add = <T extends OptionalId<FirestoreDocumentType>>(ref: DocumentReference<T>, data: OptionalId<T>) => {
+  public add = <T extends OptionalId<FirestoreDocumentType>>(ref: DocumentReference<T>, data: OptionalId<T>): this => {
     const addData = Firestore.beforeAdd(data);
     this.getBatch().set(ref, addData as T);
     this.incrementCount();
     return this;
   };
 
-  public set = <T>(ref: DocumentReference<T>, data: NestedPartial<T>, option?: {merge: boolean}) => {
+  public set = <T>(ref: DocumentReference<T>, data: NestedPartial<T>, option?: {merge: boolean}): this => {
     const setData = Firestore.beforeSet(data);
     this.getBatch().set(ref, setData as T, {merge: Firestore.optimizeMergeOption(option?.merge)});
     this.incrementCount();
     return this;
   };
 
-  public delete = <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: T) => {
+  public delete = <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: T): this => {
     const now = Firestore.now();
     this.getBatch().set(ref, {...data, updatedAt: now, deleted: true, deletedAt: now});
     this.incrementCount();
     return this;
   };
 
-  public forceDelete = <T extends FirestoreDocumentType>(ref: DocumentReference<T>) => {
+  public forceDelete = <T extends FirestoreDocumentType>(ref: DocumentReference<T>): this => {
     this.getBatch().delete(ref);
     this.incrementCount();
     return this;
   };
 
-  public commit = async () => {
+  public commit = async (): Promise<FirebaseFirestore.WriteResult[]> => {
     const results = await Promise.all(this.batchArray.map(batch => batch.commit()));
     this.reset();
     return results.flat();
