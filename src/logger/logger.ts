@@ -1,7 +1,14 @@
 import {logger} from 'firebase-functions';
 import {safeStringify} from '../utils/utils';
 
-export class Logger {
+export interface LoggerInterface {
+  setPrefix(prefix: string): void;
+  log(prefix: string): void;
+  warn(prefix: string): void;
+  error(prefix: string): void;
+}
+
+export class Logger implements LoggerInterface {
   public static create = (name: string) => new Logger(name);
   private constructor(protected name: string, protected prefix?: string) {}
 
