@@ -8,6 +8,7 @@ export class Firestore {
   public static getFirestoreInstance = () => firestore();
   public static collection = (collectionPath: string) => firestore().collection(collectionPath);
   public static now = () => firestore.Timestamp.now();
+  public static randomId = () => firestore().collection('random').doc().id;
 
   /**
    * @param data
