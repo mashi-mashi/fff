@@ -2,6 +2,7 @@ import {CollectionReference, DocumentReference, Query} from '@google-cloud/fires
 import {firestore} from 'firebase-admin';
 import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../types/firestore-types';
 import {deleteUndefinedRecursively} from '../utils/utils';
+import {FirestoreBatch} from './firestore-batch';
 
 export class Firestore {
   public static getFirestoreInstance = () => firestore();
@@ -23,9 +24,7 @@ export class Firestore {
   /**
    * @param data
    */
-  public static beforeSet = <T extends FirestoreDocumentType>(
-    data: NestedPartial<T>
-  ): NestedPartial<T> => {
+  public static beforeSet = <T extends FirestoreDocumentType>(data: NestedPartial<T>): NestedPartial<T> => {
     const setData = {...data} as NestedPartial<WithMetadata<T>>;
     if ('id' in setData) delete setData.id;
     if ('createdAt' in setData) delete setData.createdAt;
@@ -49,6 +48,23 @@ export class Firestore {
     return addData as WithMetadata<T>;
   };
 
+  public static bulkAdd = async <T extends OptionalId<FirestoreDocumentType>>(
+    collectionRef: CollectionReference<T>,
+    dataArray: OptionalId<T>[]
+  ): Promise<WithMetadata<T>[]> => {
+    const batch = new FirestoreBatch();
+
+    const addedData = dataArray.map(data => {
+      const docRef = data.id ? collectionRef.doc(data.id) : collectionRef.doc();
+      batch.add<T>(docRef, data);
+      return {...data, id: docRef.id};
+    });
+
+    await batch.commit();
+
+    return addedData as WithMetadata<T>[];
+  };
+
   public static set = async <T extends FirestoreDocumentType>(
     ref: DocumentReference<T>,
     data: NestedPartial<T>,
@@ -57,6 +73,23 @@ export class Firestore {
     const setData = Firestore.beforeSet(data);
     await ref.set(setData as T, {merge: option?.merge});
     return setData as WithMetadata<NestedPartial<T>>;
+  };
+
+  public static bulkSet = async <T extends FirestoreDocumentType>(
+    collectionRef: CollectionReference<T>,
+    dataArray: NestedPartial<T>[]
+  ): Promise<WithMetadata<NestedPartial<T>>[]> => {
+    const batch = new FirestoreBatch();
+
+    const updateArray = dataArray.map(data => {
+      const docRef = data.id ? collectionRef.doc(data.id) : collectionRef.doc();
+      batch.set<T>(docRef, data);
+      return {...data, id: docRef.id};
+    });
+
+    await batch.commit();
+
+    return updateArray as WithMetadata<NestedPartial<T>>[];
   };
 
   public static get = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>): Promise<T | undefined> => {
@@ -89,8 +122,10 @@ export class Firestore {
     }));
   };
 
-  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<WithMetadata<T>[]> =>
-    (await ref.get()).docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
+  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<WithMetadata<T>[]> => {
+    const data = await ref.get();
+    return data.docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
+  };
 
   public static delete = async <T extends FirestoreDocumentType>(
     ref: DocumentReference<T>
@@ -103,6 +138,23 @@ export class Firestore {
     return {id: ref.id};
   };
 
+  public static bulkDelete = async <T extends FirestoreDocumentType>(
+    collectionRef: CollectionReference<T>,
+    ids: string[]
+  ): Promise<{ids: string[]}> => {
+    const currentArray = await Firestore.getDocs(collectionRef, ids);
+    if (!currentArray?.length) throw new Error('data-not-found');
+
+    const batch = new FirestoreBatch();
+    currentArray.forEach(current =>
+      batch.set(collectionRef.doc(current.id), {...current, deleted: true, deletedAt: Firestore.now} as any)
+    );
+
+    await batch.commit();
+
+    return {ids};
+  };
+
   public static forceDelete = async <T extends FirestoreDocumentType>(
     ref: DocumentReference<T>
   ): Promise<FirestoreDocumentType> => {
@@ -110,6 +162,18 @@ export class Firestore {
     return {
       id: ref.id,
     };
+  };
+
+  public static bulkForceDelete = async <T extends FirestoreDocumentType>(
+    collectionRef: CollectionReference<T>,
+    ids: string[]
+  ): Promise<{ids: string[]}> => {
+    const batch = new FirestoreBatch();
+    ids.forEach(id => batch.forceDelete(collectionRef.doc(id)));
+
+    await batch.commit();
+
+    return {ids};
   };
 
   public static deleteFieldValue = () => firestore.FieldValue.delete();
