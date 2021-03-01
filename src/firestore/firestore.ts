@@ -25,14 +25,14 @@ export class Firestore {
    */
   public static beforeSet = <T extends FirestoreDocumentType>(
     data: NestedPartial<T>
-  ): WithMetadata<NestedPartial<T>> => {
+  ): NestedPartial<T> => {
     const setData = {...data} as NestedPartial<WithMetadata<T>>;
     if ('id' in setData) delete setData.id;
     if ('createdAt' in setData) delete setData.createdAt;
     if ('deletedAt' in setData) delete setData.deletedAt;
     deleteUndefinedRecursively(setData);
     setData.updatedAt = Firestore.now();
-    return setData;
+    return setData as NestedPartial<T>;
   };
 
   public static optimizeMergeOption = (merge?: boolean) => {
@@ -46,7 +46,7 @@ export class Firestore {
   ): Promise<WithMetadata<T>> => {
     const addData = Firestore.beforeAdd(data) as T;
     await ref.set(addData);
-    return addData;
+    return addData as WithMetadata<T>;
   };
 
   public static set = async <T extends FirestoreDocumentType>(
@@ -56,7 +56,7 @@ export class Firestore {
   ): Promise<WithMetadata<NestedPartial<T>>> => {
     const setData = Firestore.beforeSet(data);
     await ref.set(setData as T, {merge: option?.merge});
-    return setData;
+    return setData as WithMetadata<NestedPartial<T>>;
   };
 
   public static get = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>): Promise<T | undefined> => {
@@ -89,8 +89,8 @@ export class Firestore {
     }));
   };
 
-  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<T[]> =>
-    (await ref.get()).docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id}));
+  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<WithMetadata<T>[]> =>
+    (await ref.get()).docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
 
   public static delete = async <T extends FirestoreDocumentType>(
     ref: DocumentReference<T>

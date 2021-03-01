@@ -39,9 +39,9 @@ export type TimestampToEpochMillis<T> = T extends Array<infer R>
   : T;
 
 export type WithMetadata<T> = T & {
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
-  deleted?: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  deleted: boolean;
   deletedAt?: Timestamp;
 };
 
