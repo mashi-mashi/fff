@@ -1,7 +1,7 @@
 import {CollectionReference, DocumentReference, Query} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
 import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../types/firestore-types';
-import {deleteUndefinedRecursively} from '../utils/utils';
+import {deepDeleteUndefined} from '../utils/utils';
 import {FirestoreBatch} from './firestore-batch';
 
 export class Firestore {
@@ -16,7 +16,7 @@ export class Firestore {
   public static beforeAdd = <T extends OptionalId<FirestoreDocumentType>>(data: T): T => {
     const addData = {...data} as WithMetadata<T>;
 
-    deleteUndefinedRecursively(addData);
+    deepDeleteUndefined(addData);
     const now = Firestore.now();
     if ('id' in addData) delete (addData as T & {id?: string}).id;
     return {...addData, createdAt: now, updatedAt: now, deleted: false};
@@ -30,7 +30,7 @@ export class Firestore {
     if ('id' in setData) delete setData.id;
     if ('createdAt' in setData) delete setData.createdAt;
     if ('deletedAt' in setData) delete setData.deletedAt;
-    deleteUndefinedRecursively(setData);
+    deepDeleteUndefined(setData);
     setData.updatedAt = Firestore.now();
     return setData as NestedPartial<T>;
   };

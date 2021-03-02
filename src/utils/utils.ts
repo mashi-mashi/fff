@@ -1,5 +1,5 @@
 import {firestore} from 'firebase-admin';
-import {TimestampToEpochMillis} from '../types/firestore-types';
+import {DeepTimestampToMillis} from '../types/firestore-types';
 import Timestamp = firestore.Timestamp;
 
 const safeStringify = (obj: any, indent = 0): string => {
@@ -21,38 +21,38 @@ const safeStringify = (obj: any, indent = 0): string => {
 const chunk = <T extends any[]>(array: T, size: number): T[] =>
   array.reduce((newarr, _, i) => (i % size ? newarr : [...newarr, array.slice(i, i + size)]), []);
 
-const deleteUndefinedRecursively = (data: Record<string, any>) => {
+const deepDeleteUndefined = (data: Record<string, any>) => {
   for (const [k, v] of Object.entries(data)) {
     if (v === undefined) {
       delete data[k];
     } else if (v instanceof Array) {
       for (const val of v) {
-        deleteUndefinedRecursively(val);
+        deepDeleteUndefined(val);
       }
     } else if (v instanceof Object) {
-      deleteUndefinedRecursively(v);
+      deepDeleteUndefined(v);
     }
   }
   return data;
 };
 
-const timestampToMillis = <T>(data: T): TimestampToEpochMillis<T> => {
+const deepTimestampToMillis = <T>(data: T): DeepTimestampToMillis<T> => {
   if (data instanceof Array) {
-    return data.map(d => timestampToMillis(d)) as TimestampToEpochMillis<T>;
+    return data.map(d => deepTimestampToMillis(d)) as DeepTimestampToMillis<T>;
   } else if (data instanceof Timestamp) {
-    return data.toMillis() as TimestampToEpochMillis<T>;
+    return data.toMillis() as DeepTimestampToMillis<T>;
   } else if (Object.prototype.toString.call(data) === '[object Object]') {
     return Object.entries(data).reduce((previousValue, [k, v]) => {
       if (v instanceof Timestamp) {
         previousValue[k] = v.toMillis();
       } else {
-        previousValue[k] = timestampToMillis(v);
+        previousValue[k] = deepTimestampToMillis(v);
       }
       return previousValue;
-    }, {} as Record<string, unknown>) as TimestampToEpochMillis<T>;
+    }, {} as Record<string, unknown>) as DeepTimestampToMillis<T>;
   } else {
-    return data as TimestampToEpochMillis<T>;
+    return data as DeepTimestampToMillis<T>;
   }
 };
 
-export {deleteUndefinedRecursively, timestampToMillis, chunk, safeStringify};
+export {deepDeleteUndefined, deepTimestampToMillis, chunk, safeStringify};

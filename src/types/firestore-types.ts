@@ -20,8 +20,8 @@ export type NestedReadonly<T> = {
   [K in keyof T]: T[K] extends Array<infer R> ? Readonly<Array<NestedReadonly<R>>> : Readonly<NestedReadonly<T[K]>>;
 };
 
-export type TimestampToEpochMillis<T> = T extends Array<infer R>
-  ? Array<TimestampToEpochMillis<R>>
+export type DeepTimestampToMillis<T> = T extends Array<infer R>
+  ? Array<DeepTimestampToMillis<R>>
   : T extends Record<string, any>
   ? {
       [K in keyof T]: T[K] extends Timestamp
@@ -29,9 +29,9 @@ export type TimestampToEpochMillis<T> = T extends Array<infer R>
         : T[K] extends Timestamp | undefined
         ? EpochMillis | undefined
         : T[K] extends Array<infer R>
-        ? Array<TimestampToEpochMillis<R>>
+        ? Array<DeepTimestampToMillis<R>>
         : T[K] extends Record<string, any>
-        ? TimestampToEpochMillis<T[K]>
+        ? DeepTimestampToMillis<T[K]>
         : T[K];
     }
   : T extends Timestamp
