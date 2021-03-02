@@ -6,16 +6,20 @@ export class Firebase {
     databaseUrl,
     storageBucketName,
   }: {
-    serviceAccount: ServiceAccount;
+    serviceAccount?: ServiceAccount;
     databaseUrl?: string;
     storageBucketName?: string;
   }): void => {
     if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: databaseUrl,
-        storageBucket: storageBucketName,
-      });
+      admin.initializeApp(
+        serviceAccount
+          ? {
+              credential: admin.credential.cert(serviceAccount),
+              databaseURL: databaseUrl,
+              storageBucket: storageBucketName,
+            }
+          : undefined
+      );
     }
   };
 }
