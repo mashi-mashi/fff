@@ -11,8 +11,8 @@ export class FirestoreDao<T extends FirestoreDocumentType> {
     this.ref = new FirestoreRefenrece<T>(path);
     this.logger = Logger.create(`FirestoreDao[${path}]`);
   }
-  public static initialize({path}: {path: string}) {
-    return new FirestoreDao({path});
+  public static initialize<U extends FirestoreDocumentType>({path}: {path: string}) {
+    return new FirestoreDao<U>({path});
   }
 
   private createId = () => this.ref.newDoc().id;
