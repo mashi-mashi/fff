@@ -30,19 +30,13 @@ const verifyFirebaseAuth = (req: Request, res: Response, next: NextFunction) => 
     });
 };
 
-const middleware = (req: Request, _: Response, next: NextFunction) => {
+const common = (req: Request, _: Response, next: NextFunction) => {
   const ip = req.headers['x-appengine-user-ip'];
   const logger = Logger.create(`[${req.method}] [${req.path}]`);
-  if (Object.prototype.toString.call(req.body).slice(8, -1).toLowerCase() === 'object' && req.body.password) {
-    const loggingBody = {...req.body};
-    loggingBody.password = 'x'.repeat(req.body.password.length);
-    logger.log('body=', loggingBody, 'query=', req.query, 'ip=', ip);
-  } else {
-    logger.log('body=', req.body, 'query=', req.query, 'ip=', ip);
-  }
-  (req as Request & {logger: Logger}).logger = logger;
-  (req as Request & {requestIp: string}).requestIp = ip as string;
+  logger.log('body=', req.body, 'query=', req.query, 'ip=', ip);
+  (req as any).logger = logger;
+  (req as any).requestIp = ip as string;
   next();
 };
 
-export {loggerAndUser, verifyFirebaseAuth, middleware};
+export {loggerAndUser, verifyFirebaseAuth, common};
