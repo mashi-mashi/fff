@@ -1,7 +1,7 @@
 import {DocumentReference} from '@google-cloud/firestore';
 import admin from 'firebase-admin';
 import {Firestore} from './firestore';
-import {FirestoreDocumentType, NestedPartial, OptionalId} from '../types/firestore-types';
+import {FirestoreDocumentType, NestedPartial, OptionalId} from '../types/types';
 import WriteBatch = FirebaseFirestore.WriteBatch;
 
 const FIRESTORE_BATCH_LIMIT = 500;

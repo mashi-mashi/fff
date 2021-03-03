@@ -1,6 +1,6 @@
 import {CollectionReference, DocumentReference, Query} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
-import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../types/firestore-types';
+import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../types/types';
 import {deepDeleteUndefined} from '../utils/utils';
 import {FirestoreBatch} from './firestore-batch';
 

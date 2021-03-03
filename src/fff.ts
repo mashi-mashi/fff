@@ -1,8 +1,7 @@
 import admin, {ServiceAccount} from 'firebase-admin';
-import {FirestoreReference} from './firestore/firestore-reference';
 
 export class FFF {
-  public static init = ({
+  public static initialize = ({
     serviceAccount,
     databaseUrl,
     storageBucketName,
@@ -13,6 +12,7 @@ export class FFF {
     storageBucketName?: string;
     firestoreRootPath?: string;
   }): void => {
+    FFF.firestoreRootPath = firestoreRootPath ? `${firestoreRootPath}/` : '';
     if (!admin.apps.length) {
       admin.initializeApp(
         serviceAccount
@@ -23,8 +23,6 @@ export class FFF {
             }
           : undefined
       );
-
-      FFF.firestoreRootPath = firestoreRootPath ? `${firestoreRootPath}/` : '';
     }
   };
 

@@ -45,6 +45,6 @@ export type WithMetadata<T> = T & {
   deletedAt?: Timestamp;
 };
 
-export type CollectionReference<T extends FirestoreDocumentType> = FirebaseFirestore.CollectionReference<T>;
+export type CollectionReference<T> = FirebaseFirestore.CollectionReference<T>;
 export type DocumentReference<T extends FirestoreDocumentType> = FirebaseFirestore.DocumentReference<T>;
 export type Query<T extends FirestoreDocumentType> = FirebaseFirestore.Query<T>;

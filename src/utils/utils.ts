@@ -1,5 +1,5 @@
 import {firestore} from 'firebase-admin';
-import {DeepTimestampToMillis} from '../types/firestore-types';
+import {DeepTimestampToMillis} from '../types/types';
 import Timestamp = firestore.Timestamp;
 
 const safeStringify = (obj: any, indent = 0): string => {

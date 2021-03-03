@@ -1,5 +1,5 @@
 import {Request, Response} from 'express-serve-static-core';
-import {DeepTimestampToMillis} from '../types/firestore-types';
+import {DeepTimestampToMillis} from '../types/types';
 import {deepTimestampToMillis} from '../utils/utils';
 import {HttpError, HttpStatusCode} from './http-error';
 import {loggerAndUser} from './api-middlware';
