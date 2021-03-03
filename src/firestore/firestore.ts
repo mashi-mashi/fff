@@ -1,4 +1,4 @@
-import {CollectionReference, DocumentReference, Query} from '@google-cloud/firestore';
+import {CollectionReference, DocumentReference, Query, QueryDocumentSnapshot} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
 import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../types/types';
 import {deepDeleteUndefined} from '../utils/utils';
@@ -123,8 +123,24 @@ export class Firestore {
     }));
   };
 
-  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<WithMetadata<T>[]> => {
+  public static query = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<WithMetadata<T>[]> => {
     const data = await ref.get();
+    return data.docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
+  };
+
+  public static queryWithSnapshot = async <T extends FirestoreDocumentType>(
+    ref: Query<T>,
+    lastDoc: QueryDocumentSnapshot<T>,
+    page: {
+      sortKey: string;
+      order: 'desc' | 'asc';
+      limit: number;
+    }
+  ): Promise<WithMetadata<T>[]> => {
+    const data =
+      page.order === 'desc'
+        ? await ref.orderBy(page.sortKey, 'desc').startAfter(lastDoc).limit(page.limit).get()
+        : await ref.orderBy(page.sortKey, 'asc').endBefore(lastDoc).limit(page.limit).get();
     return data.docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
   };
 
@@ -190,9 +206,7 @@ export class Firestore {
       Array.from({length: Math.ceil(values.length / 10)})
         .map((_, idx) => values.slice(idx * 10, (idx + 1) * 10))
         .map(async part => {
-          const res = await Firestore.getByQuery(
-            query.where(fieldName, isFieldArray ? 'array-contains-any' : 'in', part)
-          );
+          const res = await Firestore.query(query.where(fieldName, isFieldArray ? 'array-contains-any' : 'in', part));
           results.push(...res);
         })
     );
