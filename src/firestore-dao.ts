@@ -1,14 +1,14 @@
 import {Firestore} from './firestore/firestore';
-import {FirestoreRefenrece} from './firestore/firestore-reference';
+import {FirestoreReference} from './firestore/firestore-reference';
 import {Logger, LoggerInterface} from './logger/logger';
 import {FirestoreDocumentType, NestedPartial, OptionalId} from './types/firestore-types';
 
 export class FirestoreDao<T extends FirestoreDocumentType> {
-  private ref: FirestoreRefenrece<T>;
+  private ref: FirestoreReference<T>;
   private logger: LoggerInterface;
 
   private constructor({path}: {path: string}) {
-    this.ref = new FirestoreRefenrece<T>(path);
+    this.ref = new FirestoreReference<T>(path);
     this.logger = Logger.create(`FirestoreDao[${path}]`);
   }
   public static initialize<U extends FirestoreDocumentType>({path}: {path: string}) {

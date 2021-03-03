@@ -1,15 +1,20 @@
-import {Firestore} from './firestore';
+import {FFF} from '../fff';
 import {CollectionReference, DocumentReference, FirestoreDocumentType} from '../types/firestore-types';
+import {Firestore} from './firestore';
 
-export class FirestoreRefenrece<T extends FirestoreDocumentType> {
+type WithId<T> = T & {id: string};
+
+export class FirestoreReference<T = {}> {
   private path: string;
   constructor(...paths: string[]) {
-    this.path = paths.join('/');
+    this.path = FFF.firestoreRootPath + paths.join('/');
   }
 
   public getPath = (): string => this.path;
 
-  public collection = (): CollectionReference<T> => Firestore.collection(this.path) as CollectionReference<T>;
-  public doc = (id: string): DocumentReference<T> => this.collection().doc(id) as DocumentReference<T>;
-  public newDoc = (): DocumentReference<T> => this.collection().doc() as DocumentReference<T>;
+  public collection = (): CollectionReference<WithId<T>> =>
+    Firestore.collection(this.path) as CollectionReference<T & {id: string}>;
+  public doc = (id: string): DocumentReference<WithId<T>> =>
+    this.collection().doc(id) as DocumentReference<T & {id: string}>;
+  public newDoc = (): DocumentReference<WithId<T>> => this.collection().doc() as DocumentReference<WithId<T>>;
 }
