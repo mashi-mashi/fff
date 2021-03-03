@@ -31,9 +31,9 @@ logger.log('2');
 - firestore の`set`/`add`/`query`をいい感じに使う
 
 ```typescript
-import {Firestore} from '@mashi-mashi/firebase-wapper/lib/index';
-import {FirestoreRefenrece} from '@mashi-mashi/firebase-wapper/lib/firestore/firestore-reference';
-import {FirestoreDocumentType} from '@mashi-mashi/firebase-wapper/lib/types/firestore-types';
+import {Firestore} from '@mashi-mashi/firebase-wapper';
+import {FirestoreRefenrece} from '@mashi-mashi/firebase-wapper';
+import {FirestoreDocumentType} from '@mashi-mashi/firebase-wapper';
 
 type TestDocument = FirestoreDocumentType & {
   title: string;
@@ -48,7 +48,7 @@ type TestDocument = FirestoreDocumentType & {
   await Firestore.add(ref.newDoc(), {title: 'test', index: 1});
 
   // Retrieving Documentation
-  const docs = await Firestore.getByQuery(ref.collection().where('title', '==', 'test'));
+  const docs = await Firestore.query(ref.collection().where('title', '==', 'test'));
   // Type inference works.
   const titles = docs.map(doc => doc.title);
   const firstDoc = docs[0];
