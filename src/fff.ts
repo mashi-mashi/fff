@@ -1,25 +1,20 @@
 import admin, {ServiceAccount} from 'firebase-admin';
 
 export class FFF {
-  public static initialize = ({
-    serviceAccount,
-    databaseUrl,
-    storageBucketName,
-    firestoreRootPath,
-  }: {
+  public static initialize = (option?: {
     serviceAccount?: ServiceAccount;
     databaseUrl?: string;
     storageBucketName?: string;
     firestoreRootPath?: string;
   }): void => {
-    FFF.firestoreRootPath = firestoreRootPath ? `${firestoreRootPath}/` : '';
+    FFF.firestoreRootPath = option?.firestoreRootPath ? `${option.firestoreRootPath}/` : '';
     if (!admin.apps.length) {
       admin.initializeApp(
-        serviceAccount
+        option?.serviceAccount
           ? {
-              credential: admin.credential.cert(serviceAccount),
-              databaseURL: databaseUrl,
-              storageBucket: storageBucketName,
+              credential: admin.credential.cert(option.serviceAccount),
+              databaseURL: option?.databaseUrl,
+              storageBucket: option?.storageBucketName,
             }
           : undefined
       );
