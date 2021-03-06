@@ -6,7 +6,6 @@ const logger = Logger.create('[pubsub]');
 export class Pubsub {
   public static parse = <T>(message: Message): T | undefined => {
     if (!message?.data) {
-      logger.log(`message dose not exist...`);
       return;
     }
 
