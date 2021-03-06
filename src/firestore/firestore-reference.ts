@@ -26,12 +26,12 @@ export class FirestoreNestReference<T> {
     this.name = name;
   }
 
-  public getPath = (parentId: string): string => this.parentPath(parentId).collection(this.name).path;
+  public getPath = ({parentId}: {parentId: string}): string => this.parentPath(parentId).collection(this.name).path;
 
-  public collection = (parentId: string): CollectionReference<WithId<T>> =>
+  public collection = ({parentId}: {parentId: string}): CollectionReference<WithId<T>> =>
     this.parentPath(parentId).collection(this.name) as CollectionReference<WithId<T>>;
-  public doc = (parentId: string, id: string): DocumentReference<WithId<T>> =>
+  public doc = ({parentId, id}: {parentId: string, id: string}): DocumentReference<WithId<T>> =>
     this.parentPath(parentId).collection(this.name).doc(id) as DocumentReference<WithId<T>>;
-  public newDoc = (parentId: string): DocumentReference<WithId<T>> =>
+  public newDoc = ({parentId}: {parentId: string}): DocumentReference<WithId<T>> =>
     this.parentPath(parentId).collection(this.name).doc() as DocumentReference<WithId<T>>;
 }
