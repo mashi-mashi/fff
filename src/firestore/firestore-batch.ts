@@ -46,7 +46,7 @@ export class FirestoreBatch {
 
   public set = <T>(ref: DocumentReference<T>, data: NestedPartial<T>, option?: {merge: boolean}): this => {
     const setData = Firestore.beforeSet(data);
-    this.getBatch().set(ref, setData as T, {merge: Firestore.optimizeMergeOption(option?.merge)});
+    this.getBatch().set(ref, setData as T, {merge: option?.merge ?? true});
     this.incrementCount();
     return this;
   };

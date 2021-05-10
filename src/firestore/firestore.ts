@@ -35,11 +35,6 @@ export class Firestore {
     return setData as NestedPartial<T>;
   };
 
-  public static optimizeMergeOption = (merge?: boolean) => {
-    // undefinedはtrueにする
-    return merge ?? true;
-  };
-
   public static add = async <T extends OptionalId<FirestoreDocumentType>>(
     ref: DocumentReference<T>,
     data: OptionalId<T>
@@ -72,7 +67,7 @@ export class Firestore {
     option?: {merge: boolean}
   ): Promise<WithMetadata<NestedPartial<T>>> => {
     const setData = Firestore.beforeSet(data);
-    await ref.set(setData as T, {merge: option?.merge});
+    await ref.set(setData as T, {merge: option?.merge ?? true});
     return setData as WithMetadata<NestedPartial<T>>;
   };
 
