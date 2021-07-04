@@ -8,3 +8,4 @@ firebase-debug.log
 .firebaserc
 src/playground.*
 firebase.json
+.history/
