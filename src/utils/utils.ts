@@ -21,19 +21,23 @@ const safeStringify = (obj: any, indent = 0): string => {
 const chunk = <T extends any[]>(array: T, size: number): T[] =>
   array.reduce((newarr, _, i) => (i % size ? newarr : [...newarr, array.slice(i, i + size)]), []);
 
-const deepDeleteUndefined = (data: Record<string, any>) => {
+/**
+ * 破壊的!!!
+ * undefinedのオブジェクトを再起的にデリートする
+ * @param data
+ */
+const destructiveDeepDeleteUndefined = (data: Record<string, any>) => {
   for (const [k, v] of Object.entries(data)) {
     if (v === undefined) {
       delete data[k];
     } else if (v instanceof Array) {
       for (const val of v) {
-        deepDeleteUndefined(val);
+        destructiveDeepDeleteUndefined(val);
       }
     } else if (v instanceof Object) {
-      deepDeleteUndefined(v);
+      destructiveDeepDeleteUndefined(v);
     }
   }
-  return data;
 };
 
 const deepTimestampToMillis = <T>(data: T): DeepTimestampToMillis<T> => {
@@ -55,4 +59,4 @@ const deepTimestampToMillis = <T>(data: T): DeepTimestampToMillis<T> => {
   }
 };
 
-export {deepDeleteUndefined, deepTimestampToMillis, chunk, safeStringify};
+export {destructiveDeepDeleteUndefined, deepTimestampToMillis, chunk, safeStringify};
