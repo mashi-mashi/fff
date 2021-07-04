@@ -71,6 +71,15 @@ export class Firestore {
     return setData as WithMetadata<NestedPartial<T>>;
   };
 
+  public static update = async <T extends FirestoreDocumentType>(
+    ref: DocumentReference<T>,
+    data: NestedPartial<T>
+  ): Promise<WithMetadata<NestedPartial<T>>> => {
+    const setData = Firestore.beforeSet(data);
+    await ref.update(setData as T);
+    return setData as WithMetadata<NestedPartial<T>>;
+  };
+
   public static bulkSet = async <T extends FirestoreDocumentType>(
     collectionRef: CollectionReference<T>,
     dataArray: NestedPartial<T>[]
