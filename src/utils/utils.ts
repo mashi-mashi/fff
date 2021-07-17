@@ -40,6 +40,23 @@ const destructiveDeepDeleteUndefined = (data: Record<string, any>) => {
   }
 };
 
+const deepDeleteUndefined = (data: Record<string, any>) => {
+  const data2 = {...data};
+  for (let [k, v] of Object.entries(data)) {
+    if (v === undefined) {
+      delete data2[k];
+      return data2;
+    } else if (v instanceof Array) {
+      for (let val of v) {
+        data2[k] = deepDeleteUndefined(val);
+      }
+    } else if (v instanceof Object) {
+      data2[k] = deepDeleteUndefined(v);
+    }
+  }
+  return data2;
+};
+
 const deepTimestampToMillis = <T>(data: T): DeepTimestampToMillis<T> => {
   if (data instanceof Array) {
     return data.map(d => deepTimestampToMillis(d)) as DeepTimestampToMillis<T>;
