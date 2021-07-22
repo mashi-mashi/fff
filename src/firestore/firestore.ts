@@ -132,6 +132,21 @@ export class Firestore {
     return data.docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
   };
 
+  public static pagingQuery = async <T extends any>({
+    ref,
+    lastId,
+  }: {
+    ref: CollectionReference<T>;
+    lastId?: string;
+  }): Promise<FirebaseFirestore.Query<T>> => {
+    if (!lastId) {
+      return ref.limit(1000);
+    }
+
+    const snapshot = await ref.doc(lastId).get();
+    return ref.startAfter(snapshot).limit(1000);
+  };
+
   public static queryWithSnapshot = async <T extends FirestoreDocumentType>(
     ref: Query<T>,
     lastDoc: QueryDocumentSnapshot<T>,
