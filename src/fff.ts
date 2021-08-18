@@ -6,6 +6,7 @@ export class FFF {
     databaseUrl?: string;
     storageBucketName?: string;
     firestoreRootPath?: string;
+    projectId?: string;
   }): void => {
     FFF.firestoreRootPath = option?.firestoreRootPath ? `${option.firestoreRootPath}/` : '';
     if (!admin.apps.length) {
@@ -15,7 +16,10 @@ export class FFF {
               credential: admin.credential.cert(option.serviceAccount),
               databaseURL: option?.databaseUrl,
               storageBucket: option?.storageBucketName,
+              projectId: option?.projectId,
             }
+          : option?.projectId
+          ? {projectId: option.projectId}
           : undefined
       );
     }

@@ -1,7 +1,7 @@
 import {CollectionReference, DocumentReference, Query, QueryDocumentSnapshot} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
-import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../types/types';
-import {destructiveDeepDeleteUndefined} from '../utils/utils';
+import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../../types/types';
+import {destructiveDeepDeleteUndefined} from '../../utils/utils';
 import {FirestoreBatch} from './firestore-batch';
 
 export class Firestore {
@@ -235,4 +235,19 @@ export class Firestore {
   public static timestampFromMillis = (millis: EpochMillis) => firestore.Timestamp.fromMillis(millis);
   public static timestampFromMillisIfNull = (millis?: EpochMillis) =>
     millis ? Firestore.timestampFromMillis(millis) : undefined;
+
+  public static nextRef = async <T extends any>({
+    ref,
+    id,
+  }: {
+    ref: CollectionReference<T>;
+    id?: string;
+  }): Promise<FirebaseFirestore.Query<T>> => {
+    if (!id) {
+      return ref.limit(1000);
+    }
+
+    const snapshot = await ref.doc(id).get();
+    return ref.startAfter(snapshot).limit(1000);
+  };
 }

@@ -1,7 +1,7 @@
 import {Request, Response} from 'express-serve-static-core';
-import {sendResponse} from './api/api-helper';
+import {sendResponse} from '../api/api-helper';
+import {FirestoreDocumentType, OptionalId, NestedPartial} from '../types/types';
 import {FirestoreDao} from './firestore-dao';
-import {FirestoreDocumentType, NestedPartial, OptionalId} from './types/types';
 
 export class FirestoreSimpleController<T extends FirestoreDocumentType> {
   private dao: FirestoreDao<T>;

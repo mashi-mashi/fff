@@ -9,3 +9,4 @@ firebase-debug.log
 src/playground.*
 firebase.json
 .history/
+playground.ts
