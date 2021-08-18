@@ -3,7 +3,7 @@ import {Message} from 'firebase-functions/lib/providers/pubsub';
 import {Logger} from '../../logger/logger';
 import {chunk} from '../../utils/utils';
 
-const logger = Logger.create('[pubsub]');
+const logger = Logger.create('PubsubClient');
 
 export class PubsubClient {
   private client: PubSub;
@@ -19,17 +19,18 @@ export class PubsubClient {
     );
   }
 
-  public publishJSON = async <T extends any>({topicName, json}: {topicName: string; json: T}) => {
+  public publishJSON = async <T extends object>({topicName, json}: {topicName: string; json: T}) => {
     if (!json) {
       return;
     }
 
     const topic = this.client.topic(topicName);
 
-    return await topic.publishJSON({json});
+    logger.log('publishJSON', json);
+    return await topic.publishJSON(json);
   };
 
-  public publishArray = async <T extends {values: []}>({topicName, json}: {topicName: string; json: T}) => {
+  public publishArray = async <T extends {values: any[]}>({topicName, json}: {topicName: string; json: T}) => {
     if (!json.values?.length) {
       return;
     }
@@ -51,7 +52,7 @@ export class PubsubClient {
     }
 
     const data = JSON.parse(Buffer.from(message.data, 'base64').toString()) as T;
-    logger.log(`recieved pubsub messages: ${data} (buffer)`);
+    logger.log(`recieved pubsub messages (buffer)`, message);
     return data;
   };
 
