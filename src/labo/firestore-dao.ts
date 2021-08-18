@@ -1,11 +1,11 @@
 import {Firestore} from '../libs/firestore/firestore';
 import {FirestoreReference} from '../libs/firestore/firestore-reference';
-import {Logger, LoggerInterface} from '../logger/logger';
+import {Logger} from '../logger/logger';
 import {FirestoreDocumentType, NestedPartial, OptionalId} from '../types/types';
 
 export class FirestoreDao<T extends FirestoreDocumentType> {
   private ref: FirestoreReference<T>;
-  private logger: LoggerInterface;
+  private logger: Logger;
 
   private constructor({path}: {path: string}) {
     this.ref = new FirestoreReference<T>(path);
