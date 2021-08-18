@@ -1,5 +1,5 @@
-import {FFF} from '../fff';
-import {CollectionReference, DocumentReference} from '../types/types';
+import {FFF} from '../../fff';
+import {CollectionReference, DocumentReference} from '../../types/types';
 import {Firestore} from './firestore';
 
 type WithId<T> = T & {id: string};
@@ -30,7 +30,7 @@ export class FirestoreNestReference<T> {
 
   public collection = ({parentId}: {parentId: string}): CollectionReference<WithId<T>> =>
     this.parentPath(parentId).collection(this.name) as CollectionReference<WithId<T>>;
-  public doc = ({parentId, id}: {parentId: string, id: string}): DocumentReference<WithId<T>> =>
+  public doc = ({parentId, id}: {parentId: string; id: string}): DocumentReference<WithId<T>> =>
     this.parentPath(parentId).collection(this.name).doc(id) as DocumentReference<WithId<T>>;
   public newDoc = ({parentId}: {parentId: string}): DocumentReference<WithId<T>> =>
     this.parentPath(parentId).collection(this.name).doc() as DocumentReference<WithId<T>>;

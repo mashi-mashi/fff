@@ -1,6 +1,6 @@
 import {logger} from 'firebase-functions';
-import {safeStringify} from '../utils/utils';
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const {decycle} = require('cycle');
 export interface LoggerInterface {
   setPrefix(prefix: string): void;
   log(prefix: string): void;
@@ -33,16 +33,16 @@ export class Logger implements LoggerInterface {
       if (a instanceof Error) {
         return (
           'e ' +
-          safeStringify({
+          JSON.stringify({
             ...Object.keys(a).reduce((prev: any, cur: string) => {
               prev[cur] = a[cur as 'message' | 'stack' | 'name'];
-              return prev;
+              return decycle(prev);
             }, {}),
             stack: a.stack && a.stack.replace(/\n/g, ' ').replace(/ {2,}/g, ' '),
           })
         );
       } else {
-        return safeStringify(a);
+        return decycle(a);
       }
     });
 }
