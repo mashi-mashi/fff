@@ -19,14 +19,24 @@ export class PubsubClient {
     );
   }
 
-  public publishJSON = async <T extends {values: []}>({topicName, json}: {topicName: string; json: T}) => {
+  public publishJSON = async <T extends any>({topicName, json}: {topicName: string; json: T}) => {
+    if (!json) {
+      return;
+    }
+
+    const topic = this.client.topic(topicName);
+
+    return await topic.publishJSON({json});
+  };
+
+  public publishArray = async <T extends {values: []}>({topicName, json}: {topicName: string; json: T}) => {
     if (!json.values?.length) {
       return;
     }
 
     const topic = this.client.topic(topicName);
 
-    const reqs: any[] = chunk(json.values, 200).map(array => ({
+    const reqs = chunk(json.values, 200).map(array => ({
       values: array,
     }));
 
