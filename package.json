@@ -27,7 +27,8 @@
     "cors": "^2.8.5",
     "cycle": "^1.0.3",
     "firebase-admin": "^9.4.2",
-    "firebase-functions": "^3.13.1"
+    "firebase-functions": "^3.13.1",
+    "winston": "^3.3.3"
   },
   "engines": {
     "node": "12"

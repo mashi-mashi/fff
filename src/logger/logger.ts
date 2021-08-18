@@ -1,48 +1,19 @@
-import {logger} from 'firebase-functions';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const {decycle} = require('cycle');
-export interface LoggerInterface {
-  setPrefix(prefix: string): void;
-  log(prefix: string): void;
-  warn(prefix: string): void;
-  error(prefix: string): void;
-}
+import * as winston from 'winston';
 
-export class Logger implements LoggerInterface {
+export class Logger {
   public static create = (name: string) => new Logger(name);
-  private constructor(protected name: string, protected prefix?: string) {}
+  private constructor(
+    protected name: string,
+    protected client = winston.createLogger({
+      level: 'silly',
+      transports: [new winston.transports.Console()],
+    })
+  ) {
+    this.name = name;
+    this.client = client;
+  }
 
-  public setPrefix = (prefix: string) => (this.prefix = prefix);
-
-  public log = (...any: any[]) => logger.log(...this.parse(...this.makeArray(...any)));
-
-  public warn = (...any: any[]) => logger.warn(...this.parse(...this.makeArray(...any)));
-
-  public error = (...any: any[]) => logger.error(...this.parse(...this.makeArray(...any)));
-
-  private makeArray = (...any: any[]) => {
-    const arr = [this.name];
-    if (this.prefix) arr.push(this.prefix);
-    if (any) arr.push(...any);
-
-    return arr;
-  };
-
-  private parse = (...any: any[]): string[] =>
-    any.map(a => {
-      if (a instanceof Error) {
-        return (
-          'e ' +
-          JSON.stringify({
-            ...Object.keys(a).reduce((prev: any, cur: string) => {
-              prev[cur] = a[cur as 'message' | 'stack' | 'name'];
-              return decycle(prev);
-            }, {}),
-            stack: a.stack && a.stack.replace(/\n/g, ' ').replace(/ {2,}/g, ' '),
-          })
-        );
-      } else {
-        return decycle(a);
-      }
-    });
+  public log = (message: string, ...any: any[]) => this.client.info(`[${this.name || ''}]${message}`, ...any);
+  public warn = (message: string, ...any: any[]) => this.client.warn(`[${this.name || ''}]${message}`, ...any);
+  public error = (message: string, ...any: any[]) => this.client.error(`[${this.name || ''}]${message}`, ...any);
 }
