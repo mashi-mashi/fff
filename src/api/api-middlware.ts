@@ -67,7 +67,7 @@ const verifyFirebaseAuthCustomDomain = (req: Request, res: Response, next: NextF
 const common = (req: Request, _: Response, next: NextFunction) => {
   const ip = req.headers['x-appengine-user-ip'];
   const logger = Logger.create(`[${req.method}] [${req.path}]`);
-  logger.log('body=', req.body, 'query=', req.query, 'ip=', ip);
+  logger.log(`body=: ${req.body} query=${req.query} ip=${ip}`);
   (req as any).logger = logger;
   (req as any).requestIp = ip as string;
   next();
