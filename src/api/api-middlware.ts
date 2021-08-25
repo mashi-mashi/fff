@@ -2,6 +2,7 @@ import {NextFunction, Request, Response} from 'express';
 import * as admin from 'firebase-admin';
 import {FFF} from '../fff';
 import {Logger} from '../logger/logger';
+import {getCircularReplacer} from '../utils/utils';
 
 const loggerAndUser = <T extends Request = Request>(req: T) =>
   req as T & {user: admin.auth.DecodedIdToken} & {logger: Logger};
@@ -49,7 +50,7 @@ const verifyFirebaseAuthCustomDomain = (req: Request, res: Response, next: NextF
       logger.log(`userId: ${v.uid} domain: ${domain}`);
 
       if (domain !== FFF.verifyDomain) {
-        res.status(400);
+        res.status(403);
         res.send('undesignated mail domain.');
         return;
       }
@@ -67,7 +68,12 @@ const verifyFirebaseAuthCustomDomain = (req: Request, res: Response, next: NextF
 const common = (req: Request, _: Response, next: NextFunction) => {
   const ip = req.headers['x-appengine-user-ip'];
   const logger = Logger.create(`[${req.method}] [${req.path}]`);
-  logger.log(`body=: ${req.body} query=${req.query} ip=${ip}`);
+  logger.log(
+    `body=${JSON.stringify(req.body, getCircularReplacer)} query=${JSON.stringify(
+      req.query,
+      getCircularReplacer
+    )} ip=${ip}`
+  );
   (req as any).logger = logger;
   (req as any).requestIp = ip as string;
   next();

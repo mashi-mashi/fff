@@ -2,7 +2,7 @@ import {firestore} from 'firebase-admin';
 import {DeepTimestampToMillis} from '../types/types';
 import Timestamp = firestore.Timestamp;
 
-const chunk = <T extends any[]>(array: T, size: number): T[] =>
+export const chunk = <T extends any[]>(array: T, size: number): T[] =>
   array.reduce((newarr, _, i) => (i % size ? newarr : [...newarr, array.slice(i, i + size)]), []);
 
 /**
@@ -10,7 +10,7 @@ const chunk = <T extends any[]>(array: T, size: number): T[] =>
  * undefinedのオブジェクトを再起的にデリートする
  * @param data
  */
-const destructiveDeepDeleteUndefined = (data: Record<string, any>) => {
+export const destructiveDeepDeleteUndefined = (data: Record<string, any>) => {
   for (const [k, v] of Object.entries(data)) {
     if (v === undefined) {
       delete data[k];
@@ -24,7 +24,7 @@ const destructiveDeepDeleteUndefined = (data: Record<string, any>) => {
   }
 };
 
-const deepDeleteUndefined = (data: Record<string, any>) => {
+export const deepDeleteUndefined = (data: Record<string, any>) => {
   const data2 = {...data};
   for (let [k, v] of Object.entries(data)) {
     if (v === undefined) {
@@ -41,7 +41,7 @@ const deepDeleteUndefined = (data: Record<string, any>) => {
   return data2;
 };
 
-const deepTimestampToMillis = <T>(data: T): DeepTimestampToMillis<T> => {
+export const deepTimestampToMillis = <T>(data: T): DeepTimestampToMillis<T> => {
   if (data instanceof Array) {
     return data.map(d => deepTimestampToMillis(d)) as DeepTimestampToMillis<T>;
   } else if (data instanceof Timestamp) {
@@ -60,4 +60,15 @@ const deepTimestampToMillis = <T>(data: T): DeepTimestampToMillis<T> => {
   }
 };
 
-export {destructiveDeepDeleteUndefined, deepTimestampToMillis, chunk};
+export const getCircularReplacer = () => {
+  const seen = new WeakSet();
+  return (key: any, value: object | null) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+};
