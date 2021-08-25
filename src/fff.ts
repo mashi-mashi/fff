@@ -7,8 +7,10 @@ export class FFF {
     storageBucketName?: string;
     firestoreRootPath?: string;
     projectId?: string;
+    verifyDomain?: string;
   }): void => {
     FFF.firestoreRootPath = option?.firestoreRootPath ? `${option.firestoreRootPath}/` : '';
+    FFF.verifyDomain = option?.verifyDomain || '';
     if (!admin.apps.length) {
       admin.initializeApp(
         option?.serviceAccount
@@ -26,4 +28,5 @@ export class FFF {
   };
 
   public static firestoreRootPath: string;
+  public static verifyDomain: string;
 }
