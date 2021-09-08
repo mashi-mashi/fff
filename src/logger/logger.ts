@@ -12,7 +12,7 @@ export class Logger implements LoggerInterface {
   public static create = (name: string) => new Logger(name);
   private constructor(
     protected name: string,
-    protected client = winston.createLogger({
+    protected client = winston.loggers.get(name, {
       level: 'info',
       format: winston.format.combine(
         winston.format.timestamp({
