@@ -7,8 +7,7 @@ import {FirestoreBatch} from './firestore-batch';
 
 export class Firestore {
   public static getFirestoreInstance = () => firestore();
-  public static collection = (collectionPath: string) =>
-    firestore().collection(FFF.firestoreRootPath + '/' + collectionPath);
+  public static collection = (collectionPath: string) => firestore().collection(FFF.firestoreRootPath + collectionPath);
   public static now = () => firestore.Timestamp.now();
   public static randomId = () => firestore().collection('random').doc().id;
 
