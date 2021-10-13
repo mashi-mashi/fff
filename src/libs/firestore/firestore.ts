@@ -1,12 +1,14 @@
 import {CollectionReference, DocumentReference, Query, QueryDocumentSnapshot} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
+import {FFF} from '../../fff';
 import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../../types/types';
 import {destructiveDeepDeleteUndefined} from '../../utils/utils';
 import {FirestoreBatch} from './firestore-batch';
 
 export class Firestore {
   public static getFirestoreInstance = () => firestore();
-  public static collection = (collectionPath: string) => firestore().collection(collectionPath);
+  public static collection = (collectionPath: string) =>
+    firestore().collection(FFF.firestoreRootPath + '/' + collectionPath);
   public static now = () => firestore.Timestamp.now();
   public static randomId = () => firestore().collection('random').doc().id;
 
