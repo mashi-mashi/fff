@@ -1,8 +1,15 @@
 import {CollectionReference, DocumentReference, Query, QueryDocumentSnapshot} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
-import {FFF} from '../../fff';
-import {EpochMillis, FirestoreDocumentType, NestedPartial, OptionalId, WithMetadata} from '../../types/types';
-import {destructiveDeepDeleteUndefined} from '../../utils/utils';
+import {FFF} from '../fff';
+import {
+  DeepTimestampToMillis,
+  EpochMillis,
+  FirestoreDocumentType,
+  NestedPartial,
+  OptionalId,
+  WithMetadata,
+} from '../types/types';
+import {deepTimestampToMillis, destructiveDeepDeleteUndefined} from '../utils/utils';
 import {FirestoreBatch} from './firestore-batch';
 
 export class Firestore {
@@ -10,6 +17,17 @@ export class Firestore {
   public static collection = (collectionPath: string) => firestore().collection(FFF.firestoreRootPath + collectionPath);
   public static now = () => firestore.Timestamp.now();
   public static randomId = () => firestore().collection('random').doc().id;
+
+  private static timestampToEpochMills = <T>(
+    snapshot: firestore.DocumentSnapshot<T> | firestore.QueryDocumentSnapshot<T>
+  ): DeepTimestampToMillis<T | undefined> => {
+    const data = snapshot.data();
+    if (data) {
+      return deepTimestampToMillis<T>({...data, id: snapshot.id});
+    } else {
+      return undefined;
+    }
+  };
 
   /**
    * @param data
@@ -105,6 +123,14 @@ export class Firestore {
     return data ? ({...data, id: doc.id} as T) : undefined;
   };
 
+  public static getEpochMills = async <T extends FirestoreDocumentType>(
+    ref: DocumentReference<T>
+  ): Promise<DeepTimestampToMillis<WithMetadata<T>> | undefined> => {
+    const doc = await ref.get();
+    const d = Firestore.timestampToEpochMills(doc);
+    return d as DeepTimestampToMillis<WithMetadata<T>>;
+  };
+
   /**
    * @param collectionRef
    * @param ids
@@ -128,9 +154,38 @@ export class Firestore {
     }));
   };
 
-  public static query = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<WithMetadata<T>[]> => {
+  public static getDocsEpochMills = async <T extends FirestoreDocumentType>(
+    collectionRef: CollectionReference<T>,
+    ids: string[]
+  ): Promise<DeepTimestampToMillis<WithMetadata<T>>[]> => {
+    if (!ids || !ids.length) {
+      return [];
+    }
+
+    const uniqIds = Array.from(new Set(ids));
+
+    const refs = uniqIds.map(id => firestore().doc(`${collectionRef.path}/${id}`));
+    const docs = await firestore().getAll(...refs);
+    return docs.map(doc => Firestore.timestampToEpochMills(doc) as unknown as DeepTimestampToMillis<WithMetadata<T>>);
+  };
+
+  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<WithMetadata<T>[]> => {
     const data = await ref.get();
     return data.docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
+  };
+
+  /**
+   * 日付をEpochMillsに変更
+   * @param ref
+   * @returns
+   */
+  public static getByQueryEpochMills = async <T extends FirestoreDocumentType>(
+    ref: Query<T>
+  ): Promise<DeepTimestampToMillis<WithMetadata<T>>[]> => {
+    const data = await ref.get();
+    return data.docs
+      .filter(d => d.exists)
+      .map(doc => Firestore.timestampToEpochMills(doc) as unknown as DeepTimestampToMillis<WithMetadata<T>>);
   };
 
   public static pagingQuery = async <T extends any>({
@@ -226,7 +281,9 @@ export class Firestore {
       Array.from({length: Math.ceil(values.length / 10)})
         .map((_, idx) => values.slice(idx * 10, (idx + 1) * 10))
         .map(async part => {
-          const res = await Firestore.query(query.where(fieldName, isFieldArray ? 'array-contains-any' : 'in', part));
+          const res = await Firestore.getByQuery(
+            query.where(fieldName, isFieldArray ? 'array-contains-any' : 'in', part)
+          );
           results.push(...res);
         })
     );

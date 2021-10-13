@@ -1,5 +1,5 @@
-import {FFF} from '../../fff';
-import {CollectionReference, DocumentReference} from '../../types/types';
+import {FFF} from '../fff';
+import {CollectionReference, DocumentReference} from '../types/types';
 import {Firestore} from './firestore';
 
 type WithId<T> = T & {id: string};

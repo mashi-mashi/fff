@@ -1,7 +1,7 @@
 import {BigQuery} from '@google-cloud/bigquery';
-import {HttpError, HttpStatusCode} from '../../api/http-error';
-import {Logger} from '../../logger/logger';
-import {chunk} from '../../utils/utils';
+import {HttpError, HttpStatusCode} from '../api/http-error';
+import {Logger} from '../logger/logger';
+import {chunk} from '../utils/utils';
 
 const logger = Logger.create('BigQueryClient');
 

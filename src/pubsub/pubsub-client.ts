@@ -1,7 +1,7 @@
 import {PubSub} from '@google-cloud/pubsub';
 import {Message} from 'firebase-functions/lib/providers/pubsub';
-import {Logger} from '../../logger/logger';
-import {chunk} from '../../utils/utils';
+import {Logger} from '../logger/logger';
+import {chunk} from '../utils/utils';
 
 const logger = Logger.create('PubsubClient');
 
