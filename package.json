@@ -14,7 +14,8 @@
     "fixpack": "fixpack",
     "lint": "eslint --ext .ts ./src --cache",
     "lintfix": "eslint --ext .ts ./src --cache --fix",
-    "test": "npx jest"
+    "test": "npx jest",
+    "eumluator": "firebase --project='test' emulators:start"
   },
   "files": [
     "lib"
@@ -38,6 +39,7 @@
     "node": "12"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^2.0.2",
     "@types/cors": "^2.8.12",
     "@types/jest": "^27.0.1",
     "@typescript-eslint/eslint-plugin": "^4.31.0",
