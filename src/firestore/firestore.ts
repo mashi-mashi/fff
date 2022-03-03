@@ -137,13 +137,13 @@ export class Firestore {
    */
   public static getDocs = async <T extends FirestoreDocumentType>(
     collectionRef: CollectionReference<T>,
-    ids: string[]
+    ids?: (string | undefined)[]
   ): Promise<T[]> => {
     if (!ids || !ids.length) {
       return [];
     }
 
-    const uniqIds = Array.from(new Set(ids));
+    const uniqIds = Array.from(new Set(ids.filter(id => !!id)));
 
     const refs = uniqIds.map(id => firestore().doc(`${collectionRef.path}/${id}`));
     const docs = await firestore().getAll(...refs);

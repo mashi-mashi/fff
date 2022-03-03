@@ -10,3 +10,6 @@ src/playground.*
 firebase.json
 .history/
 playground.ts
+src/local/
+*.csv
+.vscode/
