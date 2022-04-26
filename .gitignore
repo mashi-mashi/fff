@@ -14,3 +14,5 @@ src/local/
 *.csv
 .vscode/
 *debug.log
+
+src/playground.*

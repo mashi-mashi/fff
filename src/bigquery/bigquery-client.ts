@@ -1,7 +1,7 @@
 import {BigQuery} from '@google-cloud/bigquery';
 import {HttpError, HttpStatusCode} from '../api/http-error';
 import {Logger} from '../logger/logger';
-import {chunk} from '../utils/utils';
+import {chunk, deepDeleteUndefined} from '../utils/utils';
 
 const logger = Logger.create('BigQueryClient');
 
@@ -79,7 +79,4 @@ export class BigQueryClient {
     const bytesAsTeraBytes: number = bytes / 1024 / 1024 / 1024 / 1024;
     return (bytesAsTeraBytes / 1) /* TB */ * 5 /* $ */ * 113; /* 円(ドル円相場) */
   };
-}
-function deepDeleteUndefined(deepDeleteUndefined: any): any {
-  throw new Error('Function not implemented.');
 }

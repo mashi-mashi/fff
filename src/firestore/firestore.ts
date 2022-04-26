@@ -1,14 +1,7 @@
 import {CollectionReference, DocumentReference, Query, QueryDocumentSnapshot} from '@google-cloud/firestore';
 import {firestore} from 'firebase-admin';
 import {FFF} from '../fff';
-import {
-  DeepTimestampToMillis,
-  EpochMillis,
-  FirestoreDocumentType,
-  NestedPartial,
-  OptionalId,
-  WithMetadata,
-} from '../types/types';
+import {DeepTimestampToMillis, EpochMillis, NestedPartial, OptionalId, RequireId, WithMetadata} from '../types/types';
 import {deepTimestampToMillis, destructiveDeepDeleteUndefined} from '../utils/utils';
 import {FirestoreBatch} from './firestore-batch';
 
@@ -32,7 +25,7 @@ export class Firestore {
   /**
    * @param data
    */
-  public static beforeAdd = <T extends OptionalId<FirestoreDocumentType>>(data: T): T => {
+  public static beforeAdd = <T extends OptionalId<RequireId>>(data: T): T => {
     const addData = {...data} as WithMetadata<T>;
 
     destructiveDeepDeleteUndefined(addData);
@@ -44,7 +37,7 @@ export class Firestore {
   /**
    * @param data
    */
-  public static beforeSet = <T extends FirestoreDocumentType>(data: NestedPartial<T>): NestedPartial<T> => {
+  public static beforeSet = <T extends RequireId>(data: NestedPartial<T>): NestedPartial<T> => {
     const setData = {...data} as NestedPartial<WithMetadata<T>>;
     if ('id' in setData) delete setData.id;
     if ('createdAt' in setData) delete setData.createdAt;
@@ -54,7 +47,7 @@ export class Firestore {
     return setData as NestedPartial<T>;
   };
 
-  public static add = async <T extends OptionalId<FirestoreDocumentType>>(
+  public static add = async <T extends OptionalId<RequireId>>(
     ref: DocumentReference<T>,
     data: OptionalId<T>
   ): Promise<WithMetadata<T>> => {
@@ -63,7 +56,7 @@ export class Firestore {
     return addData as WithMetadata<T>;
   };
 
-  public static bulkAdd = async <T extends OptionalId<FirestoreDocumentType>>(
+  public static bulkAdd = async <T extends OptionalId<RequireId>>(
     collectionRef: CollectionReference<T>,
     dataArray: OptionalId<T>[]
   ): Promise<WithMetadata<T>[]> => {
@@ -80,7 +73,7 @@ export class Firestore {
     return addedData as WithMetadata<T>[];
   };
 
-  public static set = async <T extends FirestoreDocumentType>(
+  public static set = async <T extends RequireId>(
     ref: DocumentReference<T>,
     data: NestedPartial<T>,
     option?: {merge: boolean}
@@ -90,7 +83,7 @@ export class Firestore {
     return setData as WithMetadata<NestedPartial<T>>;
   };
 
-  public static update = async <T extends FirestoreDocumentType>(
+  public static update = async <T extends RequireId>(
     ref: DocumentReference<T>,
     data: NestedPartial<T>
   ): Promise<WithMetadata<NestedPartial<T>>> => {
@@ -99,7 +92,7 @@ export class Firestore {
     return setData as WithMetadata<NestedPartial<T>>;
   };
 
-  public static bulkSet = async <T extends FirestoreDocumentType>(
+  public static bulkSet = async <T extends RequireId>(
     collectionRef: CollectionReference<T>,
     dataArray: NestedPartial<T>[]
   ): Promise<WithMetadata<NestedPartial<T>>[]> => {
@@ -116,14 +109,14 @@ export class Firestore {
     return updateArray as WithMetadata<NestedPartial<T>>[];
   };
 
-  public static get = async <T extends FirestoreDocumentType>(ref: DocumentReference<T>): Promise<T | undefined> => {
+  public static get = async <T extends RequireId>(ref: DocumentReference<T>): Promise<T | undefined> => {
     const doc = await ref.get();
     const data = doc.data();
 
     return data ? ({...data, id: doc.id} as T) : undefined;
   };
 
-  public static getEpochMills = async <T extends FirestoreDocumentType>(
+  public static getEpochMills = async <T extends RequireId>(
     ref: DocumentReference<T>
   ): Promise<DeepTimestampToMillis<WithMetadata<T>> | undefined> => {
     const doc = await ref.get();
@@ -135,7 +128,7 @@ export class Firestore {
    * @param collectionRef
    * @param ids
    */
-  public static getDocs = async <T extends FirestoreDocumentType>(
+  public static getDocs = async <T extends RequireId>(
     collectionRef: CollectionReference<T>,
     ids?: (string | undefined)[]
   ): Promise<T[]> => {
@@ -154,7 +147,7 @@ export class Firestore {
     }));
   };
 
-  public static getDocsEpochMills = async <T extends FirestoreDocumentType>(
+  public static getDocsEpochMills = async <T extends RequireId>(
     collectionRef: CollectionReference<T>,
     ids: string[]
   ): Promise<DeepTimestampToMillis<WithMetadata<T>>[]> => {
@@ -169,7 +162,7 @@ export class Firestore {
     return docs.map(doc => Firestore.timestampToEpochMills(doc) as unknown as DeepTimestampToMillis<WithMetadata<T>>);
   };
 
-  public static getByQuery = async <T extends FirestoreDocumentType>(ref: Query<T>): Promise<WithMetadata<T>[]> => {
+  public static getByQuery = async <T extends RequireId>(ref: Query<T>): Promise<WithMetadata<T>[]> => {
     const data = await ref.get();
     return data.docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
   };
@@ -179,7 +172,7 @@ export class Firestore {
    * @param ref
    * @returns
    */
-  public static getByQueryEpochMills = async <T extends FirestoreDocumentType>(
+  public static getByQueryEpochMills = async <T extends RequireId>(
     ref: Query<T>
   ): Promise<DeepTimestampToMillis<WithMetadata<T>>[]> => {
     const data = await ref.get();
@@ -203,7 +196,7 @@ export class Firestore {
     return ref.startAfter(snapshot).limit(1000);
   };
 
-  public static queryWithSnapshot = async <T extends FirestoreDocumentType>(
+  public static queryWithSnapshot = async <T extends RequireId>(
     ref: Query<T>,
     lastDoc: QueryDocumentSnapshot<T>,
     page: {
@@ -219,9 +212,7 @@ export class Firestore {
     return data.docs.filter(d => d.exists).map(doc => ({...doc.data(), id: doc.id} as WithMetadata<T>));
   };
 
-  public static delete = async <T extends FirestoreDocumentType>(
-    ref: DocumentReference<T>
-  ): Promise<FirestoreDocumentType> => {
+  public static delete = async <T extends RequireId>(ref: DocumentReference<T>): Promise<RequireId> => {
     const current = await Firestore.get(ref);
     if (!current) throw new Error('data-not-found');
 
@@ -230,7 +221,7 @@ export class Firestore {
     return {id: ref.id};
   };
 
-  public static bulkDelete = async <T extends FirestoreDocumentType>(
+  public static bulkDelete = async <T extends RequireId>(
     collectionRef: CollectionReference<T>,
     ids: string[]
   ): Promise<{ids: string[]}> => {
@@ -247,16 +238,14 @@ export class Firestore {
     return {ids};
   };
 
-  public static forceDelete = async <T extends FirestoreDocumentType>(
-    ref: DocumentReference<T>
-  ): Promise<FirestoreDocumentType> => {
+  public static forceDelete = async <T extends RequireId>(ref: DocumentReference<T>): Promise<RequireId> => {
     await ref.delete();
     return {
       id: ref.id,
     };
   };
 
-  public static bulkForceDelete = async <T extends FirestoreDocumentType>(
+  public static bulkForceDelete = async <T extends RequireId>(
     collectionRef: CollectionReference<T>,
     ids: string[]
   ): Promise<{ids: string[]}> => {

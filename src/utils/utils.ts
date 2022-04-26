@@ -43,17 +43,38 @@ export const deepDeleteUndefined = (data: Record<string, any>) => {
 
 export const deepTimestampToMillis = <T>(data: T): DeepTimestampToMillis<T> => {
   if (data instanceof Array) {
-    return data.map(d => deepTimestampToMillis(d)) as DeepTimestampToMillis<T>;
+    return data.map(deepTimestampToMillis) as DeepTimestampToMillis<T>;
   } else if (data instanceof Timestamp) {
     return data.toMillis() as DeepTimestampToMillis<T>;
+    // https://stackoverflow.com/questions/31459821/whats-different-between-object-prototype-tostring-call-and-typeof
   } else if (Object.prototype.toString.call(data) === '[object Object]') {
-    return Object.entries(data).reduce((previousValue, [k, v]) => {
+    return Object.entries(data).reduce((prev, [k, v]) => {
       if (v instanceof Timestamp) {
-        previousValue[k] = v.toMillis();
+        prev[k] = v.toMillis();
       } else {
-        previousValue[k] = deepTimestampToMillis(v);
+        prev[k] = deepTimestampToMillis(v);
       }
-      return previousValue;
+      return prev;
+    }, {} as Record<string, unknown>) as DeepTimestampToMillis<T>;
+  } else {
+    return data as DeepTimestampToMillis<T>;
+  }
+};
+
+export const deepTimestampToMillisV2 = <T>(data: T): DeepTimestampToMillis<T> => {
+  if (data instanceof Array) {
+    return data.map(deepTimestampToMillisV2) as DeepTimestampToMillis<T>;
+  } else if (data instanceof Timestamp) {
+    return data.toMillis() as DeepTimestampToMillis<T>;
+    // https://stackoverflow.com/questions/31459821/whats-different-between-object-prototype-tostring-call-and-typeof
+  } else if (Object.prototype.toString.call(data) === '[object Object]') {
+    return Object.entries(data).reduce((prev, [k, v]) => {
+      if (v instanceof Timestamp) {
+        prev[k] = v.toMillis();
+      } else {
+        prev[k] = deepTimestampToMillisV2(v);
+      }
+      return prev;
     }, {} as Record<string, unknown>) as DeepTimestampToMillis<T>;
   } else {
     return data as DeepTimestampToMillis<T>;
