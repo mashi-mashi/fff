@@ -1,5 +1,5 @@
 import {v4 as uuidv4} from 'uuid';
-import {DocumentReference} from '../types/types';
+import {DocumentReference, NestedPartial} from '../types/types';
 import {Firestore} from './firestore';
 
 export class FirestoreTransaction {
@@ -15,11 +15,15 @@ export class FirestoreTransaction {
     return (await this.transaction.getAll(...ref)).map(res => ({...res.data(), id: res.id} as unknown as T));
   }
 
-  add(ref: DocumentReference<any>, data: any) {
-    return this.transaction.set(ref, Firestore.beforeAdd(data));
+  add<T extends {id?: string}>(ref: DocumentReference<T>, data: T) {
+    return this.transaction.set(ref, Firestore.beforeAdd(data), {merge: true});
   }
 
-  set(ref: DocumentReference<any>, data: any) {
-    return this.transaction.set(ref, Firestore.beforeSet(data));
+  set<T extends {id: string}>(ref: DocumentReference<T>, data: NestedPartial<T>) {
+    return this.transaction.set(ref, Firestore.beforeSet(data) as Partial<T>, {merge: true});
+  }
+
+  delete(ref: DocumentReference<any>) {
+    return this.transaction.delete(ref);
   }
 }
