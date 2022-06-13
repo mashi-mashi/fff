@@ -17,7 +17,7 @@ export type WithMetadata<T> = RequireId & {
 } & T;
 
 export type CollectionReference<T extends RequireId> = FirebaseFirestore.CollectionReference<T>;
-export type DocumentReference<T extends RequireId> = FirebaseFirestore.DocumentReference<T>;
+export type DocumentReference<T extends OptionalId<RequireId>> = FirebaseFirestore.DocumentReference<T>;
 export type Query<T extends RequireId> = FirebaseFirestore.Query<T>;
 
 // https://stackoverflow.com/questions/47914536/use-partial-in-nested-property-with-typescript

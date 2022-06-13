@@ -4,6 +4,7 @@ import {FFF} from '../fff';
 import {DeepTimestampToMillis, EpochMillis, NestedPartial, OptionalId, RequireId, WithMetadata} from '../types/types';
 import {deepTimestampToMillis, destructiveDeepDeleteUndefined} from '../utils/utils';
 import {FirestoreBatch} from './firestore-batch';
+import {FirestoreTransaction} from './firestore-transaction';
 
 export class Firestore {
   public static getFirestoreInstance = () => firestore();
@@ -296,5 +297,13 @@ export class Firestore {
 
     const snapshot = await ref.doc(id).get();
     return ref.startAfter(snapshot).limit(1000);
+  };
+
+  public static runTransaction = async <T extends RequireId>(
+    updateFunction: (transaction: FirestoreTransaction) => Promise<T>
+  ) => {
+    Firestore.getFirestoreInstance().runTransaction(transaction => {
+      return updateFunction(new FirestoreTransaction(transaction));
+    });
   };
 }

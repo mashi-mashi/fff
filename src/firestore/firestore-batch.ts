@@ -1,6 +1,6 @@
 import {DocumentReference} from '@google-cloud/firestore';
 import admin from 'firebase-admin';
-import {FirestoreDocumentType, NestedPartial, OptionalId} from '../types/types';
+import {RequireId, NestedPartial, OptionalId} from '../types/types';
 import {Firestore} from './firestore';
 import WriteBatch = FirebaseFirestore.WriteBatch;
 
@@ -37,7 +37,7 @@ export class FirestoreBatch {
     return this.batchArray[this.batchIndex];
   };
 
-  public add = <T extends OptionalId<FirestoreDocumentType>>(ref: DocumentReference<T>, data: OptionalId<T>): this => {
+  public add = <T extends OptionalId<RequireId>>(ref: DocumentReference<T>, data: OptionalId<T>): this => {
     const addData = Firestore.beforeAdd(data);
     this.getBatch().set(ref, addData as T);
     this.incrementCount();
@@ -51,14 +51,14 @@ export class FirestoreBatch {
     return this;
   };
 
-  public delete = <T extends FirestoreDocumentType>(ref: DocumentReference<T>, data: T): this => {
+  public delete = <T extends RequireId>(ref: DocumentReference<T>, data: T): this => {
     const now = Firestore.now();
     this.getBatch().set(ref, {...data, updatedAt: now, deleted: true, deletedAt: now});
     this.incrementCount();
     return this;
   };
 
-  public forceDelete = <T extends FirestoreDocumentType>(ref: DocumentReference<T>): this => {
+  public forceDelete = <T extends RequireId>(ref: DocumentReference<T>): this => {
     this.getBatch().delete(ref);
     this.incrementCount();
     return this;
