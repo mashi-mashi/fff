@@ -302,7 +302,7 @@ export class Firestore {
   public static runTransaction = async <T extends RequireId>(
     updateFunction: (transaction: FirestoreTransaction) => Promise<T>
   ) => {
-    Firestore.getFirestoreInstance().runTransaction(transaction => {
+    await Firestore.getFirestoreInstance().runTransaction(transaction => {
       return updateFunction(new FirestoreTransaction(transaction));
     });
   };
